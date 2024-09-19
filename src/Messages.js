@@ -40,7 +40,7 @@ const Messages = () => {
     ]);
 
     const applicationToken = process.env.LANGFLOW_APP_TOKEN;
-    const flowIdOrName = 'abd201e4-9f12-46ec-9f8b-1988730bffc8';
+    const flowIdOrName = process.env.LANGFLOW_ID_OR_NAME;
     const langflowClient = new LangflowClient('http://127.0.0.1:7860',applicationToken);
 
     const handleChange = (event)=>{
