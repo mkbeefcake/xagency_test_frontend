@@ -1,4 +1,5 @@
 import React, {useState} from 'react'
+import LangflowClient from './LangflowClient'
 
 const SystemMessage = ({message}) => {
     return (
@@ -29,13 +30,19 @@ const UserMessage = ({message}) => {
 
 const Messages = () => {
 
-    const [input, setInput] = useState("");
+    const [loading, setLoading] = useState(false);
+    const [input, setInput] = useState("");   
     const [messages, setMessages] = useState([
         {
             message: "Hello I am ChatGPT",
             sender: "ChatGPT"
         }
     ]);
+
+    const flowIdOrName = 'f88a3db8-0fc7-48a8-a0ca-a572ff90be5c';
+    const langflowId = 'ba4b375c-ccc4-439c-a0ad-dc4614052707';
+    const applicationToken = process.env.LANGFLOW_APP_TOKEN;
+    const langflowClient = new LangflowClient('https://api.langflow.astra.datastax.com', applicationToken);
 
     const handleChange = (event)=>{
         setInput(event.target.value)
@@ -60,15 +67,159 @@ const Messages = () => {
     }
 
     async function processMessageToChatGPT(chatMessages){
-        setMessages(
-            [
-                ...chatMessages,
-                {
-                    message: "Hi there",
-                    sender: "ChatGPT"
-                }
-            ]
-        )
+
+        setLoading(true);
+        const tweaks = {
+            "File-4sOQK": {
+                "path": "MattFarmerAI-TikTok-Profile-Scripts-analytics.csv",
+                "silent_errors": true
+            },
+            "SQLExecutor-GdmpY": {
+                "add_error": false,
+                "database_url": "postgresql://postgres:rootroot@35.224.13.19:5432/mydatabase",
+                "include_columns": false,
+                "passthrough": false,
+                "table_name": "tiktok_profile_scripts_table"
+            },
+            "ChatInput-Un0cn": {
+                "files": "",
+                "input_value": "let me know more about Midjourney",
+                "sender": "User",
+                "sender_name": "User",
+                "session_id": "",
+                "should_store_message": true
+            },
+            "Chroma-PZCvk": {
+                "allow_duplicates": false,
+                "chroma_server_cors_allow_origins": "",
+                "chroma_server_grpc_port": null,
+                "chroma_server_host": "",
+                "chroma_server_http_port": null,
+                "chroma_server_ssl_enabled": false,
+                "collection_name": "langflow",
+                "limit": null,
+                "number_of_results": 2,
+                "persist_directory": "",
+                "search_query": "",
+                "search_type": "Similarity"
+            },
+            "OpenAIEmbeddings-BxW4W": {
+                "chunk_size": 1000,
+                "client": "",
+                "default_headers": {},
+                "default_query": {},
+                "deployment": "",
+                "dimensions": null,
+                "embedding_ctx_length": 1536,
+                "max_retries": 3,
+                "model": "text-embedding-3-small",
+                "model_kwargs": {},
+                "openai_api_base": "",
+                "openai_api_key": process.env.OPENAI_KEY,
+                "openai_api_type": "",
+                "openai_api_version": "",
+                "openai_organization": "",
+                "openai_proxy": "",
+                "request_timeout": null,
+                "show_progress_bar": false,
+                "skip_empty": false,
+                "tiktoken_enable": true,
+                "tiktoken_model_name": ""
+            },
+            "ParseData-CyqHm": {
+                "table_name": "tiktok_profile_scripts_table"
+            },
+            "SQLExecutor-YE4mO": {
+                "add_error": true,
+                "database_url": "postgresql://postgres:rootroot@35.224.13.19:5432/mydatabase",
+                "include_columns": false,
+                "max_string_length": 1000,
+                "passthrough": false,
+                "query": ""
+            },
+            "OpenAIModel-LjbVw": {
+                "api_key": process.env.OPENAI_KEY,
+                "input_value": "",
+                "json_mode": false,
+                "max_tokens": null,
+                "model_kwargs": {},
+                "model_name": "gpt-3.5-turbo",
+                "openai_api_base": "",
+                "output_schema": {},
+                "seed": 1,
+                "stream": false,
+                "system_message": "",
+                "temperature": 0.1
+            },
+            "Prompt-lc2mh": {
+                "template": "{reference}\n\n---\n\nYou are an expert social media content creator. Please generate a response in JSON format that includes the following fields:\n\n- `transcript`: A social media post based on the user's request, using the reference text as a foundation. The post should be well-organized, engaging and thoughtful. Please include around {sentences} sentences detailed explanations within the transcript to provide a comprehensive view. Feel free to incorporate additional insights or enhancements to make the post more compelling.\n- `caption`: A concise, one-sentence title for the transcript.\n- `hashtags`: A list of relevant hashtags, each starting with the `#` symbol.\n- `need_video`: A boolean value indicating whether a video is required.\n- `need_audio`: A boolean value indicating whether audio is required.\n\nEnsure that the response is in valid JSON format with no additional text or explanation.\n\n{question}",
+                "reference": "",
+                "sentences": "15",
+                "question": ""
+            },
+            "CustomComponent-J4PQG": {
+                "input_value": ""
+            },
+            "ChatOutput-JGrRU": {
+                "data_template": "{text}",
+                "input_value": "",
+                "sender": "Machine",
+                "sender_name": "AI",
+                "session_id": "",
+                "should_store_message": true
+            },
+            "LangWatchEvaluatorComponent-DPntP": {
+                "answer": "",
+                "question": "",
+                "question_id": "",
+                "user_cpf": "",
+                "user_email": "",
+                "user_name": ""
+            }
+        };
+
+        try {
+            const response = await langflowClient.runFlow(
+                flowIdOrName,
+                langflowId,
+                input,
+                'chat',
+                'chat',
+                tweaks,
+                false,
+                (data) => console.log(data.chunk), // onUpdate
+                (message) => console.log("Stream Closed:", message), // onClose
+                (error) => console.log("Stream Error:", error) // onError
+            );
+
+            if (response && response.outputs) {
+                const flowOutputs = response.outputs[0];
+                const firstComponentOutputs = flowOutputs.outputs[0];
+                setMessages(
+                    [
+                        ...chatMessages,
+                        {
+                            message: firstComponentOutputs.outputs.message.text,
+                            sender: "ChatGPT"
+                        }
+                    ]
+                )
+            }
+        } catch (error) {
+            console.error('Error:', error.message);
+            setMessages(
+                [
+                    ...chatMessages,
+                    {
+                        message: "Sorry, There happened the issue on my side",
+                        sender: "ChatGPT"
+                    }
+                ]
+            )
+        } finally {
+            setLoading(false);
+        }
+
     }    
 
     return (
