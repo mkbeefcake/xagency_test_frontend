@@ -69,25 +69,6 @@ const Messages = () => {
         await processMessageToChatGPT(newMessages);
     }
 
-    const createPublishPathForLangWatch = (traceID) => {
-        const options = {
-            mode: 'cors',
-            method: 'POST',
-            headers: {
-                'X-Auth-Token': process.env.REACT_APP_LANGWATCH_API_KEY
-            },
-            referrer: ''
-        };
-            
-        fetch(`https://app.langwatch.ai/api/trace/${traceID}/share`, options)
-            .then(response => response.json())
-            .then(response => {
-                console.log(`LangWatch Tracing Share Path: ${response.path}`)
-                setSharePath(response.path)
-            })
-            .catch(err => console.error(err));
-    }
-
     async function processMessageToChatGPT(chatMessages){
 
         setLoading(true);
@@ -123,10 +104,9 @@ const Messages = () => {
                 const firstComponentOutputs = flowOutputs.outputs[0];
                 const output = firstComponentOutputs.outputs.message
                 const senderName = output.message.sender_name
-                const traceID = senderName.split("&&&")[1];
-                console.log(`TraceID: ${traceID}`)
-
-                createPublishPathForLangWatch(traceID)
+                const path = senderName.split("&&&")[1];
+                console.log(`LangWatch Tracing Share Path: ${path}`)
+                setSharePath(path)
                 setMessages(
                     [
                         ...chatMessages,
