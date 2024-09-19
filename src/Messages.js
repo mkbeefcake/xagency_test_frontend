@@ -7,7 +7,7 @@ const SystemMessage = ({message}) => {
             <div className="flex items-end w-auto bg-gray-500 dark:bg-gray-800 m-1 rounded-xl rounded-br-none sm:w-3/4 md:w-auto">
                 <div className="p-2">
                     <div className="text-gray-200">
-                        {message}
+                        {message?.replace("\n", "<br/>")}
                     </div>
                 </div>
             </div>
@@ -39,8 +39,8 @@ const Messages = () => {
         }
     ]);
 
-    const applicationToken = process.env.LANGFLOW_APP_TOKEN;
-    const flowIdOrName = process.env.LANGFLOW_ID_OR_NAME;
+    const applicationToken = process.env.REACT_APP_LANGFLOW_APP_TOKEN;
+    const flowIdOrName = process.env.REACT_APP_LANGFLOW_ID_OR_NAME;
     const langflowClient = new LangflowClient('http://127.0.0.1:7860',applicationToken);
 
     const handleChange = (event)=>{
